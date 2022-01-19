@@ -40,11 +40,11 @@ catch (std::out_of_range&){
 catch (invalidIP& errwhat) {
     const char oor[12] = "outofrange4";
     const char badformat[14] = "invalidformat";
-    if ((strcmp(errwhat.what(), oor) == '\0')) {
+    if ((strcmp(errwhat.what(), oor) == 0)) {
         cerr << ip4_oor << endl;
         return EXIT_FAILURE;
     }
-    else if ((strcmp(errwhat.what(), badformat)) == '\0') {
+    else if ((strcmp(errwhat.what(), badformat)) == 0) {
         cerr << ip4_invalidfmt << endl;
         return EXIT_FAILURE;
     }

@@ -22,12 +22,15 @@ public:
     const std::string getIP();
 
 private:
-    std::vector<int> ipaddr_;
-    std::vector<std::string> ipaddr6_;
-    std::vector<int> nmask_;
+    std::vector<int> v_ipaddr_;
+    std::vector<std::string> v_ipaddr6_;
+    std::vector<int> v_nmask_;
     int leadbits_;
-    size_t ipaddrSize_;
+    size_t ipaddrVSize_;
     bool ip6_;
+
+    const char delim4_ = '.';
+    const char delim6_ = ':';
 };
 
 class invalidIP : public std::runtime_error {

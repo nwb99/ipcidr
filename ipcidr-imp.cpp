@@ -21,9 +21,7 @@ ip::ip(string ipaddr)
 
 void ip::ipType(string ipaddr)
 {
-    string ip4Delim = ".";
-
-    if (ipaddr.find(ip4Delim, 0) != string::npos) {
+    if (ipaddr.find(delim4_, 0) != string::npos) {
         ip4Parse(ipaddr);
     }
     else {
@@ -34,15 +32,14 @@ void ip::ipType(string ipaddr)
 
 void ip::ip4Parse(string ipaddr)
 {
-    char delim = '.';
     string addrSubstr;
     size_t curpos = 0, epos, dlen = 1,
         iplen = ipaddr.length();
 
     // Find index of delimiter until end of string is reached.
-    while ((epos = ipaddr.find(delim, curpos)) != string::npos) {
+    while ((epos = ipaddr.find(delim4_, curpos)) != string::npos) {
         addrSubstr = ipaddr.substr(curpos, (epos - curpos));
-        ipaddr_.push_back(stoi(addrSubstr));
+        v_ipaddr_.push_back(stoi(addrSubstr));
         epos += dlen;
         curpos = epos;
     }
@@ -54,54 +51,55 @@ void ip::ip4Parse(string ipaddr)
         addrSubstr = ipaddr.substr(curpos, (iplen - curpos));
 
         char* posptr;
-        ipaddr_.push_back(strtol(addrSubstr.c_str(), &posptr, 10));
+        v_ipaddr_.push_back(strtol(addrSubstr.c_str(), &posptr, 10));
+        // if all characters were valid integers, last match should be null.
         if (*posptr != '\0') {
             throw std::invalid_argument("IP not an int");
         }
     }
 
-    ipaddrSize_ = ipaddr_.size();
+    ipaddrVSize_ = v_ipaddr_.size();
 
-    if (ipaddrSize_ > 4 || ipaddrSize_ < 4) {
+    if (ipaddrVSize_ > 4 || ipaddrVSize_ < 4) {
         throw invalidIP("invalidformat");
     }
 
-    for (size_t i = 0; i < ipaddrSize_; ++i) {
-        if (ipaddr_[i] < 0 || ipaddr_[i] > 255) {
+    for (size_t i = 0; i < ipaddrVSize_; ++i) {
+        if (v_ipaddr_[i] < 0 || v_ipaddr_[i] > 255) {
             throw invalidIP("outofrange4");
         }
     }
 
 }
 
+// not working and unfinished
 void ip::ip6Parse(string ipaddr)
 {
-    string delim = ":";
     string addrSubstr;
-    string allowedChars = "0123456789abcdefABCDEF";
-    size_t curpos = 0, epos, dlen = delim.length(),
+    const string allowedChars = "0123456789abcdefABCDEF";
+    size_t curpos = 0, epos,
         iplen = ipaddr.length();
 
     // Find index of delimiter until end of string is reached.
-    while ((epos = ipaddr.find(delim, curpos)) != string::npos) {
+    while ((epos = ipaddr.find(delim6_, curpos)) != string::npos) {
         addrSubstr = ipaddr.substr(curpos, (epos - curpos));
 
         if (addrSubstr.find_first_not_of(allowedChars) == string::npos) {
             throw invalidIP("invalidformat6");
         }
 
-        ipaddr6_.push_back(addrSubstr);
-        if (ipaddr[epos++] == delim[0]) {
-            epos += (dlen + 1);
-            ipaddr6_.push_back("0");
+        v_ipaddr6_.push_back(addrSubstr);
+        if (ipaddr[epos++] == delim6_) {
+            epos += 2;
+            v_ipaddr6_.push_back("0");
         }
         else {
-            epos += dlen;
+            epos++;
         }
         curpos = epos;
     }
 
-    ipaddrSize_ = ipaddr6_.size();
+    ipaddrVSize_ = v_ipaddr6_.size();
 }
 
 
@@ -109,18 +107,21 @@ const string ip::getIP()
 {
    std::stringstream ip;
 
+    // ipv6 not done
     if (ip6_) {
-        for (size_t i = 0; i < ipaddrSize_; ++i) {
-            ip << ipaddr6_[i];
-            if (i != (ipaddrSize_ - 1)) {
+        for (size_t i = 0; i < ipaddrVSize_; ++i) {
+            ip << v_ipaddr6_[i];
+            if (i != (ipaddrVSize_ - 1)) {
                 ip << ":";
             }
         }
     }
     else {  // IPv4
-        for (size_t i = 0; i < ipaddrSize_; ++i) {
-           ip << ipaddr_[i];
-           if (i != (ipaddrSize_ - 1)) {
+        for (size_t i = 0; i < ipaddrVSize_; ++i) {
+           ip << v_ipaddr_[i];
+
+           // don't append delimiter to end of string
+           if (i != (ipaddrVSize_ - 1)) {
                ip << ".";
            }
         } 
